@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<div id="graph" style="min-width: 400px; height: 400px; margin: 0 auto"></div>
+
+<div id="entry_modal" class="modal hide fade">
+    <div class="modal-header">
+        <h3 id="myModalLabel">Enter your weight</h3>
+    </div>
+    <div class="modal-body">
+        {% for i in range(data_max - data_min + 1) %}
+            {% if (i > 0) and (i % data_columns == 0) %}
+                <br>
+            {% endif %}
+            <a class="btn btn-small submit_data" href="#" data-val="{{ data_min + i }}">{{ data_min + i }}</a>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    $(function() {
+        $('.submit_data').click(submitData);
+        $('#entry_modal').modal({'show': false, 'backdrop': 'static'});
+
+        promptForData()
+    });
+
+    function promptForData() {
+        $.get('/chart/data/weight/today', function(result) {
+            if (result) {
+                loadGraph();
+            } else {
+                // Needs prompting
+                $('#entry_modal').modal('show');
+            }
+        });
+    }
+    function submitData(e) {
+        $.post('/chart/data/weight', {value: $(this).attr('data-val')}, function(resp) {
+            $('#entry_modal').modal('hide');
+            loadGraph();
+        })
+    }
+
+    function loadGraph() {
+        $.get('/chart/data/weight', function(results) {
+            series = [];
+            $.each(results, function(i, dataItem) {
+                var dateParts = dataItem.date.split('-');
+                series.push([Date.UTC(dateParts[0], dateParts[1]-1, dateParts[2]), parseInt(dataItem.value, 10)]);
+            });
+
+            $('#graph').highcharts({
+                chart: {
+                    type: 'spline'
+                },
+                title: {
+                    text: 'Weight'
+                },
+                xAxis: {
+                    type: 'datetime',
+                    minTickInterval: 3600 * 24 * 1000,
+                    dateTimeLabelFormats: {
+                        day: '%b %e'
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: 'lbs'
+                    },
+                    allowDecimals: false
+                },
+
+                series: [{
+                    name: 'Weight',
+
+                    data: series
+                }]
+            });
+        });
+    }
+</script>
+
+{% endblock %}
