@@ -19,7 +19,7 @@ def dispatch_root():
     return flask.redirect(menu[0]['path'])
 
 @app.route('/<controller>/')
-def dispath_controller(controller):
+def dispatch_controller(controller):
     return flask.redirect('/%s/index' % controller)
 
 @app.route('/<controller>/<action>/', methods=['GET', 'POST'])
@@ -33,7 +33,7 @@ def dispatch(controller, action, path):
         return app.send_static_file(flask.request.path[8:])
     try:
         controller_module = importlib.import_module('controllers.%s' % controller)
-    except ImportError:
+    except ImportError, e:
         flask.abort(404)
 
     try:

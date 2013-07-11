@@ -1,8 +1,7 @@
 from nose.tools import *
 import sqlalchemy.exc
 
-import config
-config.test()
+import config_test
 import db
 
 class test_db:

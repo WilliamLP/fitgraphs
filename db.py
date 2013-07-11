@@ -23,7 +23,7 @@ from sqlalchemy import *
 import config
 import tables
 
-_engine = create_engine(config.config['database_url'])
+_engine = create_engine(config.config['DATABASE_URL'])
 tables.metadata.bind = _engine
 
 def create_all():
